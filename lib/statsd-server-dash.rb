@@ -54,7 +54,7 @@ module StatsdServer
 
         results = metrics.map do |metric|
           # TODO more validation?
-          next if metric.empty?
+          next if metric.nil? || metric.empty?
 
           { name: metric, data: cmd.fetch(datatype, level, metric) }
         end
