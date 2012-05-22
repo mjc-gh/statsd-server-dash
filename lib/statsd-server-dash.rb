@@ -59,7 +59,7 @@ module StatsdServer
           { name: metric, data: cmd.fetch(datatype, level, metric) }
         end
 
-        respond_with results.tap { |r| r.compact! }
+        respond_with results.tap(&:compact!)
       end
     end
   end
