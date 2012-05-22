@@ -52,7 +52,7 @@ module StatsdServer
           # TODO more validation?
           next if metric.nil? || metric.empty?
 
-          { name: metric, data: cmd.fetch(datatype, level, metric) }
+          { label: metric, data: cmd.fetch(datatype, level, metric) }
         end
 
         respond_with results.tap(&:compact!)
