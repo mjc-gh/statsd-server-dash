@@ -37,10 +37,6 @@ module StatsdServer
     end
 
     %w[ counters timers gauges ].each do |datatype|
-      get "/#{datatype}", :provides => :html do
-        haml :view
-      end
-
       get "/#{datatype}", :provides => :json do
         metrics = params[:metrics]
         metrics = [metrics] unless Array === metrics
@@ -49,7 +45,7 @@ module StatsdServer
         cmd = if index.zero?
           StatsdServer::Readers::Redis.new(redis)
         else
-          StatsdServer::Readers::FileSystem.new(data_path)
+          StatsdServer::Readers::FileSystem.new(settings.data_path)
         end
 
         results = metrics.map do |metric|
@@ -60,6 +56,10 @@ module StatsdServer
         end
 
         respond_with results.tap(&:compact!)
+      end
+
+      get "/#{datatype}", :provides => :html do
+        haml :view
       end
     end
   end
