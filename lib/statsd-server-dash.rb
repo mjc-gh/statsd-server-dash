@@ -24,9 +24,10 @@ module StatsdServer
 
       def determine_retention_level_and_index
         diff = params[:stop].to_i - params[:start].to_i
+				levels = retention_levels
 
-        retention_levels.each_with_index do |pair, index|
-          return [pair.first, index] if diff <= pair.last
+        levels.each_with_index do |pair, index|
+          return [pair.first, index] if diff <= pair.last || index == level.size - 1
         end
       end
     end
