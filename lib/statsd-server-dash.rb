@@ -27,7 +27,7 @@ module StatsdServer
 				levels = retention_levels
 
         levels.each_with_index do |pair, index|
-          return [pair.first, index] if diff <= pair.last || index == level.size - 1
+          return [pair.first, index] if diff <= pair.last || index == levels.size - 1
         end
       end
     end
