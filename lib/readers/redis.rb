@@ -7,11 +7,9 @@ module StatsdServer
         @redis = redis
       end
 
-      def fetch(datatype, level, metric)
-        redis.zrange("#{datatype}:#{metric}", 0, -1).map do |val|
+      def fetch(metric, datatype, opts)
+        redis.zrangebyscore("#{datatype}:#{metric}", *opts[:range]).map do |val|
           split = val.split("\x01R").map!(&:to_i)
-
-          [split.first * 1000, split.last]
         end
       end
     end

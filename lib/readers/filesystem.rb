@@ -7,7 +7,7 @@ module StatsdServer
         @path = path
       end
 
-      def fetch(datatype, level, metric)
+      def fetch(metric, datatype, opts)
         raise NotImplementedError
       end
     end
