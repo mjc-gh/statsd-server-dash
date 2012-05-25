@@ -161,3 +161,8 @@ a {
   height: 400px;
   margin: 0 auto;
 }
+/* line 45, ../../sass/public.scss */
+#content .graph h2 {
+  text-align: center;
+  margin: 180px;
+}
