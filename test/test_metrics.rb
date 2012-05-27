@@ -5,43 +5,38 @@ describe StatsdServer::Dash do
     header 'Accept', 'text/html'
   end
 
-  it 'has counters routes' do
+  it 'has counters route' do
     get '/counters'
 
     last_response.status.must_equal 200
+    last_response.body.wont_be_empty
   end
 
-  it 'has timers routes' do
+  it 'has timers route' do
     get '/timers'
 
     last_response.status.must_equal 200
+    last_response.body.wont_be_empty
   end
 
-  it 'has gauges routes' do
+  it 'has gauges route' do
     get '/gauges'
 
     last_response.status.must_equal 200
-  end
-
-  it 'renders html with graph' do
-    get '/counters'
-
-    # bitty hack but it works
     last_response.body.wont_be_empty
-    last_response.body.must_match %r[<div class=.graph.>]
   end
 
   describe 'json api' do
     before do
       header 'Accept', 'application/json'
 
-      @start = Time.now.to_i
+      @time = Time.now.to_i
       @metric = 'dash_test'
     end
 
 		describe 'range parameter' do
       before do
-        create_redis_data :counters, @metric, @start, 5, 10 # 5 pts over 10 sec step
+        create_redis_data :counters, @metric, @time, 5, 10 # 5 pts over 10 sec step
       end
 
 			it 'responds to no range' do
@@ -51,27 +46,28 @@ describe StatsdServer::Dash do
 
 				json_response['range'].wont_be_empty
 				json_response['metrics'].first.wont_be_nil
+
 				json_response['metrics'].first['label'].must_equal @metric
-				json_response['metrics'].first['data'].wont_be_empty
+				json_response['metrics'].first['data'].size.must_equal 5
 			end
 
 			it 'responds to specific range' do
-				get "/counters?metrics[]=#{@metric}"
+				get "/counters?metrics[]=#{@metric}&start=#{@time - 25}&stop=#{@time}"
 
 				last_response.status.must_equal 200
 
 				json_response['range'].wont_be_empty
 				json_response['metrics'].first.wont_be_nil
 				json_response['metrics'].first['label'].must_equal @metric
-				json_response['metrics'].first['data'].wont_be_empty
+				json_response['metrics'].first['data'].size.must_equal 3
 			end
 		end
 
 		describe 'zero fill' do
 			before do
 				# add some more pts so we have a gap
-				create_redis_data :counters, @metric, @start - 120, 1, 10
-				create_redis_data :counters, @metric, @start, 1, 10
+				create_redis_data :counters, @metric, @time - 120, 1, 10
+				create_redis_data :counters, @metric, @time, 1, 10
 			end
 
 			it 'fills in gaps' do
@@ -96,12 +92,12 @@ describe StatsdServer::Dash do
 
       it 'handles uneven interval' do
         # write additional data pt at uneven interval
-        uneven_score = @start + 5
+        uneven_score = @time + 5
         uneven_member = "#{uneven_score}R\x01R#{1000}"
 
         app.redis.zadd "counters:#{@metric}", uneven_score, uneven_member
 
-        get "/counters?metrics[]=#{@metric}&start=#{@start - 240}&stop=#{uneven_score}"
+        get "/counters?metrics[]=#{@metric}&start=#{@time - 240}&stop=#{uneven_score}"
 
         data_pts = json_response['metrics'].first['data']
 

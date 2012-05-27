@@ -6,7 +6,7 @@ describe StatsdServer::Dash do
       header 'Accept', 'application/json'
     end
 
-    describe 'metrics' do
+    describe 'metrics parameter' do
       it 'returns error on nil metrics' do
         get '/counters'
 
@@ -36,7 +36,7 @@ describe StatsdServer::Dash do
       end
     end
 
-    describe 'range parsing' do
+    describe 'range parser' do
       before do
         @start = Time.now.to_i - 86000
         @stop = Time.now.to_i
