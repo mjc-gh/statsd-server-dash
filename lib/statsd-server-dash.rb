@@ -69,8 +69,10 @@ module StatsdServer
         level, index = determine_retention_level_and_index(range)
         reader = create_stats_reader(index)
 
-        read_opts = { level: level, range: range }
-        results = { range: range, metrics: [] }
+        read_opts = { level: level, range: range.dup }
+        results = { range: range, level: level * 1000, metrics: [] }
+
+        range.map! { |n| n * 1000 } # convert to milisec
 
         metrics.each do |metric|
           data = reader.fetch(metric, datatype, read_opts)
