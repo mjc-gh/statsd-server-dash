@@ -41,48 +41,59 @@ describe StatsdServer::Dash do
       create_redis_data :counters, @metric, @start, 5, 10 # 5 pts over 10 sec step
     end
 
-    it 'responds to no range' do
-      get "/counters?metrics[]=#{@metric}"
+		describe 'range parameter' do
+			it 'responds to no range' do
+				get "/counters?metrics[]=#{@metric}"
 
-      last_response.status.must_equal 200
+				last_response.status.must_equal 200
 
-      json_response['range'].wont_be_empty
-      json_response['metrics'].first.wont_be_nil
-      json_response['metrics'].first['label'].must_equal @metric
-      json_response['metrics'].first['data'].wont_be_empty
-    end
+				json_response['range'].wont_be_empty
+				json_response['metrics'].first.wont_be_nil
+				json_response['metrics'].first['label'].must_equal @metric
+				json_response['metrics'].first['data'].wont_be_empty
+			end
 
-    it 'responds to specific range' do
-      get "/counters?metrics[]=#{@metric}"
+			it 'responds to specific range' do
+				get "/counters?metrics[]=#{@metric}"
 
-      last_response.status.must_equal 200
+				last_response.status.must_equal 200
 
-      json_response['range'].wont_be_empty
-      json_response['metrics'].first.wont_be_nil
-      json_response['metrics'].first['label'].must_equal @metric
-      json_response['metrics'].first['data'].wont_be_empty
-    end
+				json_response['range'].wont_be_empty
+				json_response['metrics'].first.wont_be_nil
+				json_response['metrics'].first['label'].must_equal @metric
+				json_response['metrics'].first['data'].wont_be_empty
+			end
+		end
 
-    describe 'zero fill' do
-      before do
-        # add some more pts so we have a gap
-        create_redis_data :counters, @metric, @start - 60, 1, 10
-        create_redis_data :counters, @metric, @start - 120, 2, 10
-      end
+		describe 'zero fill' do
+			before do
+				# add some more pts so we have a gap
+				create_redis_data :counters, @metric, @start - 60, 1, 10
+				create_redis_data :counters, @metric, @start - 120, 2, 10
+			end
 
-      it 'does' do
-        get "/counters?metrics[]=#{@metric}"
-        data_pts = json_response['metrics'].first['data']
+			it 'fills in gaps' do
+				get "/counters?metrics[]=#{@metric}"
+				data_pts = json_response['metrics'].first['data']
 
-        # 120 range / 10 sec inclusive interval
-        data_pts.size.must_equal (120 / 10) + 2
+				# 120 range / 10 sec inclusive interval
+				data_pts.size.must_equal (120 / 10) + 2
 
-        non_zero = data_pts[0,2] + data_pts[7,1] + data_pts[9..-1]
-        zero_fill = data_pts[2,4] + data_pts[5,1]
+				non_zero = data_pts[0,2] + data_pts[7,1] + data_pts[9..-1]
+				zero_fill = data_pts[2,4] + data_pts[5,1]
 
-        non_zero.each { |pt| pt.last.wont_equal 0, pt }
-        zero_fill.each { |pt| pt.last.must_equal 0, pt }
-      end
-    end
-  end
+				non_zero.size.must_equal 8
+				zero_fill.size.must_equal 6
+
+				non_zero.each { |pt| pt.last.wont_equal 0, pt }
+				zero_fill.each { |pt| pt.last.must_equal 0, pt }
+			end
+
+			it 'does not fill with no_zero_fill parameter' do
+				get "/counters?metrics[]=#{@metric}&no_zero_fill=1"
+			
+				json_response['metrics'].first['data'].size.must_equal 8
+			end
+		end
+	end
 end
