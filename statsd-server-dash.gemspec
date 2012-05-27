@@ -29,4 +29,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "shotgun"
   s.add_development_dependency "thin"
+
+	s.add_development_dependency "minitest"
+  s.add_development_dependency "turn"
 end
