@@ -7,10 +7,16 @@ module StatsdServer
       results.tap do |data|
         # start from the first timestamp
         time = results.first.first + step
+        break_ts = results.last.first
         index = 0
 
         while obj = data[index += 1]
-          if obj.first == time
+          ts = obj.first
+
+          # explicit break to handle uneven intervals
+          break if time > break_ts
+
+          if ts == time
             time += step
             next
           end

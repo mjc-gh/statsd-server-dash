@@ -93,6 +93,22 @@ describe StatsdServer::Dash do
 			
 				json_response['metrics'].first['data'].size.must_equal 2
 			end
+
+      it 'handles uneven interval' do
+        # write additional data pt at uneven interval
+        uneven_score = @start + 5
+        uneven_member = "#{uneven_score}R\x01R#{1000}"
+
+        app.redis.zadd "counters:#{@metric}", uneven_score, uneven_member
+
+        get "/counters?metrics[]=#{@metric}&start=#{@start - 240}&stop=#{uneven_score}"
+
+        data_pts = json_response['metrics'].first['data']
+
+        data_pts.size.must_equal (120 / 10) + 2
+        data_pts.last.first.must_equal uneven_score * 1000
+        data_pts.last.last.must_equal 1000
+      end
 		end
 	end
 end
