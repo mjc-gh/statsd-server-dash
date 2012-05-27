@@ -2,6 +2,8 @@
 module StatsdServer
   module GraphHelpers
     def zero_fill!(results, range, step)
+			step *= 1000 # convert to milisec
+
       results.tap do |data|
         # start from the first timestamp
         time = results.first.first + step
