@@ -1,26 +1,8 @@
 statsd-server-dash
 ==================
 
-Configurable dashboard for [statsd-server](https://github.com/noahhl/statsd-server). 
+# Moved to batsd-dash
 
-
-### Install
-
-    git clone git://github.com/mikeycgto/statsd-server-dash && cd statsd-server-dash && gem build statsd-server-dash && gem install
-
-### Configuration
-
-Here is a sample rackup file (`config.ru`):
-
-    require 'statsd-server-dash'
-
-    # setup redis and data path
-    StatsdServer::Dash.set :redis, 'redis://127.0.0.1:6379'
-    StatsdServer::Dash.set :data_path, '/path/to/stats-data'
-
-    # define retention levels (should match stats-server config)
-    StatsdServer::Dash.set :retention, "10:2160,60:10080,600:262974"
-
-    run StatsdServer::Dash
-
+With the move of [statsd-server](https://github.com/noahhl/statsd-server) to [batsd-server](https://github.com/noahhl/batsd-server)
+we also update this code base. See [batsd-dash](https://github.com/mikeycgto/batsd-dash) for more details!
 
